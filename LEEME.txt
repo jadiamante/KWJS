@@ -1,0 +1,60 @@
+KDE KWJS 5 - escritorio tipo KDE Plasma 6 en JavaScript puro (WebGPU + WebAssembly SIMD)
+Autor: ThanaJAD
+
+ARCHIVOS (6, todos de menos de 4 MB)
+  index.html          HTML + CSS. Sin codigo: solo la etiqueta <script src="kwjs.js">.
+  kwjs.js             Todo el escritorio: aplicaciones, efectos, WebGPU, modulos WebAssembly (SIMD y escalar),
+                      montajes de archivos, widgets. Expone el objeto global KWJS (KWJS.launch('ark'), KWJS.fs, KWJS.media...).
+  kwjs-media.js       Biblioteca multimedia (Mediabunny + decodificadores WebAssembly AC-3/E-AC-3, MP4/ALAC, AVI). Se carga sola al hacer falta.
+  kwjs-extra.js       pdf.js (Okular) + decodificadores poco comunes (WMA, DTS, AIFF, CAF, APE, WavPack, Musepack, AMR, TTA, QOA, DSD).
+  kwjs-telegram.js    GramJS (cliente MTProto de Telegram) para la app Telegram.
+  LEEME.txt           Este archivo.
+Los tres archivos kwjs-*.js se cargan bajo demanda; tienen que estar junto a index.html.
+
+COMO USARLO
+  Abri la carpeta en una terminal y ejecuta:   python3 -m http.server 8000
+  Despues entra a http://localhost:8000  (hace falta http://localhost o https; con doble clic en index.html no funcionan
+  los montajes, el cifrado local de Telegram ni la carga de las bibliotecas).
+
+NOVEDADES DE ESTA VERSION
+  Rendimiento
+   - WebAssembly con SIMD de 128 bits (filtros de imagen, Mandelbrot, sumas CRC-32). Se detecta solo: si el procesador o el
+     navegador no tienen SIMD se usa un modulo con instrucciones escalares normales (mismos resultados bit a bit), y si
+     WebAssembly esta desactivado, JavaScript. Se puede forzar en Preferencias > Graficos y rendimiento.
+   - WebGPU para todo lo grafico: fondos animados, particulas (compute shaders), ondas y estela del puntero, cubo de escritorio,
+     filtros de imagen. Sin WebGPU, los mismos efectos se dibujan con Canvas 2D.
+  Efectos de escritorio (Preferencias > Efectos de escritorio)
+   - Fondos GPU: Aurora, Plasma, Nebulosa, Oceano, Viaje estelar, Metaesferas.
+   - Particulas: nieve, lluvia, luciernagas, confeti. Ondas al hacer clic, estela, localizar el puntero (Ctrl+Meta).
+   - Luz nocturna (2500-6500 K), invertir colores, correccion de daltonismo (protanopia/deuteranopia/tritanopia),
+     atenuar ventanas inactivas, ampliar el escritorio (Meta o Alt + rueda), mas animaciones de apertura de ventanas.
+   - Ya existian: ventanas elasticas, genio al minimizar, vista general, cubo de escritorio.
+  Archivos y montajes (Dolphin > Dispositivos > Montar...)
+   - Carpeta del equipo con lectura y escritura real (File System Access API; Chrome/Edge). En Firefox/Safari se monta una copia
+     de solo lectura. Las carpetas montadas se recuerdan y se reconectan con un clic.
+   - Archivos ZIP, TAR, TAR.GZ/TGZ e imagenes ISO 9660 (con Joliet) como carpetas de solo lectura.
+   - Disco persistente del navegador (OPFS), montado solo en /mnt/disco: lo que guardes ahi sobrevive al cerrar la pestana.
+   - Ark: ver, extraer, montar y crear ZIP. Kate, Gwenview, Elisa, Haruna y Okular abren archivos de los montajes.
+   - ATENCION: borrar o mover a la papelera algo dentro de una carpeta montada del equipo lo borra de verdad en tu disco.
+  Widgets (18): reloj digital y analogico, notas, calendario, monitor del sistema, cronometro, temporizador, lista de tareas,
+   rendimiento, bateria, almacenamiento, carpeta, portapapeles, reloj mundial, calculadora, lanzador, fase lunar y tiempo.
+   Los datos de los widgets ahora se guardan al recargar.
+  Telegram: cliente real con MTProto 2.0 (GramJS). Pide TUS credenciales api_id/api_hash (gratis en https://my.telegram.org/apps).
+   Inicio de sesion por codigo QR o telefono, 2FA, sesion cifrada con contrasena local (PBKDF2 + AES-256-GCM), sesiones activas.
+   No incluye chats secretos, llamadas ni stickers animados.
+
+CODECS
+  El navegador decodifica lo que sabe. Lo demas se decodifica por software: audio AC-3/E-AC-3, DTS, WMA, ALAC, AIFF, APE, etc.
+  Video con codecs no soportados (HEVC, MPEG-4/Xvid, WMV, MPEG-2, FLV...): Haruna lo convierte con ffmpeg.wasm a H.264 + AAC.
+  ffmpeg.wasm pesa 32 MB y NO viaja en el paquete (limite de 4 MB por archivo): se descarga una vez desde jsDelivr y queda en la
+  cache del navegador. Hace falta internet la primera vez.
+
+LIMITES HONESTOS
+  - 7z y RAR no se pueden montar. ZIP64 (mas de 4 GB) tampoco.
+  - Los montajes leen hasta 20 000 elementos por carpeta; los textos de hasta 512 KB se cargan al montar y el resto bajo demanda.
+  - Pensado para navegadores Chromium; probado solo en Chrome. Firefox y Safari no estan probados.
+  - Tiempo (widget): consulta open-meteo.com y necesita internet.
+
+LICENCIAS
+  GramJS (MIT), qrcode-generator (MIT), pdf.js (Apache-2.0), Mediabunny (MPL-2.0), decodificadores @audio/* y @mediabunny/ac3
+  (basados en FFmpeg/liba52, LGPL/GPL segun el caso), ffmpeg.wasm (LGPL/GPL, se descarga de la CDN).
